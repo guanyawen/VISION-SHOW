@@ -1,0 +1,8 @@
+{
+  "name": "TYPOGRAPHIA: VJ Performance Lab",
+  "description": "An immersive, audio-reactive typography instrument inspired by Studio Dumbar. A real-time VJ tool for live performances, experimental visuals, and interactive stage projections.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
