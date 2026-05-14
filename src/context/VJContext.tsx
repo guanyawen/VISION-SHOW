@@ -17,6 +17,7 @@ export interface VJConfig {
   aberration: number;
   wave: number;
   mode: 'default' | 'liquid' | 'glitch' | 'tech' | 'particle' | 'industrial' | 'cosmic' | 'noise';
+  animationMode: 'none' | 'wave' | 'spiral' | 'distort';
   strobe: boolean;
   trail: boolean;
   noise: boolean;
@@ -40,6 +41,7 @@ const defaultConfig: VJConfig = {
   aberration: 0.2,
   wave: 0.5,
   mode: 'default',
+  animationMode: 'none',
   strobe: false,
   trail: false,
   noise: true,
