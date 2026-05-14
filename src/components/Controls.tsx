@@ -32,6 +32,19 @@ interface ControlsProps {
 const Slider = ({ label, value, min, max, step = 0.1, onChange, unit = '' }: any) => {
   const [isDragging, setIsDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
+  const handlePointerMoveRef = useRef<((moveEvent: PointerEvent) => void) | null>(null);
+  const handlePointerUpRef = useRef<(() => void) | null>(null);
+
+  const updateValue = (clientX: number) => {
+    if (trackRef.current) {
+      const rect = trackRef.current.getBoundingClientRect();
+      const percent = (clientX - rect.left) / rect.width;
+      const constrainedPercent = Math.min(1, Math.max(0, percent));
+      const val = min + (max - min) * constrainedPercent;
+      const steppedVal = Math.round(val / step) * step;
+      onChange(Math.min(max, Math.max(min, steppedVal)));
+    }
+  };
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
@@ -48,19 +61,11 @@ const Slider = ({ label, value, min, max, step = 0.1, onChange, unit = '' }: any
       window.removeEventListener('pointerup', handlePointerUp);
     };
 
+    handlePointerMoveRef.current = handlePointerMove;
+    handlePointerUpRef.current = handlePointerUp;
+    
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-  };
-
-  const updateValue = (clientX: number) => {
-    if (trackRef.current) {
-      const rect = trackRef.current.getBoundingClientRect();
-      const percent = (clientX - rect.left) / rect.width;
-      const constrainedPercent = Math.min(1, Math.max(0, percent));
-      const val = min + (max - min) * constrainedPercent;
-      const steppedVal = Math.round(val / step) * step;
-      onChange(Math.min(max, Math.max(min, steppedVal)));
-    }
   };
 
   return (
@@ -89,7 +94,7 @@ const Slider = ({ label, value, min, max, step = 0.1, onChange, unit = '' }: any
             className="absolute left-0 h-full bg-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.5)]"
             initial={false}
             animate={{ width: `${((value - min) / (max - min)) * 100}%` }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            transition={isDragging ? { type: 'tween', duration: 0 } : { type: 'spring', damping: 30, stiffness: 400, mass: 1 }}
           />
         </div>
 
@@ -100,7 +105,7 @@ const Slider = ({ label, value, min, max, step = 0.1, onChange, unit = '' }: any
             isDragging ? "bg-white scale-x-150" : "bg-[#10b981] group-hover/track:bg-white"
           )}
           animate={{ left: `${((value - min) / (max - min)) * 100}%` }}
-          transition={isDragging ? { type: 'just' } : { type: 'spring', damping: 25, stiffness: 300 }}
+          transition={isDragging ? { type: 'tween', duration: 0 } : { type: 'spring', damping: 30, stiffness: 400, mass: 1 }}
         />
       </div>
     </div>
@@ -129,7 +134,7 @@ export const Controls: React.FC<ControlsProps> = ({ onMicRequest, onFileDrop, is
   };
 
   return (
-    <div className="fixed top-8 left-8 z-[100]">
+    <div className="w-full h-full">
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -137,7 +142,7 @@ export const Controls: React.FC<ControlsProps> = ({ onMicRequest, onFileDrop, is
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => setIsOpen(true)}
-            className="size-12 bg-black/80 backdrop-blur-xl border border-[#10b981]/30 rounded-xl flex items-center justify-center text-[#10b981] shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:bg-[#10b981] hover:text-black transition-all"
+            className="fixed top-8 left-8 z-[100] size-12 bg-black/80 backdrop-blur-xl border border-[#10b981]/30 rounded-xl flex items-center justify-center text-[#10b981] shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:bg-[#10b981] hover:text-black transition-all"
           >
             <Settings size={20} className="animate-[spin_4s_linear_infinite]" />
           </motion.button>
@@ -147,16 +152,14 @@ export const Controls: React.FC<ControlsProps> = ({ onMicRequest, onFileDrop, is
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            drag
-            dragMomentum={false}
-            dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 320, bottom: window.innerHeight - 100 }}
-            initial={{ opacity: 0, scale: 0.95, x: 0 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.95, x: -20 }}
-            className="w-80 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] flex flex-col"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed left-8 top-8 w-80 h-[calc(100vh-4rem)] bg-black/80 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)] flex flex-col z-[100] pointer-events-auto"
           >
-            {/* Draggable Title Bar */}
-            <div className="h-10 bg-white/[0.03] border-b border-white/10 flex items-center justify-between px-4 cursor-grab active:cursor-grabbing select-none">
+            {/* Title Bar - Fixed Panel */}
+            <div className="h-10 bg-white/[0.03] border-b border-white/10 flex items-center justify-between px-4 select-none">
               <div className="flex items-center gap-2">
                 <Activity size={12} className="text-[#10b981] animate-pulse" />
                 <span className="text-[10px] font-black font-mono tracking-[0.3em] text-white opacity-60 uppercase">{t.engineTitle} // L-01</span>
