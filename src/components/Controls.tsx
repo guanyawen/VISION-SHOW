@@ -284,6 +284,41 @@ export const Controls: React.FC<ControlsProps> = ({ onMicRequest, onFileDrop, is
 
                         <div className="h-[1px] bg-white/5" />
 
+                        {/* Animation Mode Selector */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[9px] uppercase tracking-widest text-[#555] font-mono font-bold">ANIMATION</span>
+                            <span className="text-[8px] font-mono text-[#10b981] bg-[#10b981]/10 px-1 rounded">FX</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {[
+                              { id: 'none', label: 'NONE' },
+                              { id: 'wave', label: 'WAVE' },
+                              { id: 'spiral', label: 'SPIRAL' },
+                              { id: 'distort', label: 'DISTORT' }
+                            ].map(m => (
+                              <button
+                                key={m.id}
+                                onClick={() => setConfig({ animationMode: m.id as any })}
+                                className={cn(
+                                  "flex items-center justify-between px-3 py-2.5 rounded border transition-all text-[10px] font-mono uppercase tracking-tighter group/anim",
+                                  config.animationMode === m.id 
+                                    ? "bg-[#10b981] text-black border-[#10b981] font-black" 
+                                    : "bg-white/[0.03] border-white/5 text-white/40 hover:border-white/20 hover:text-white/80"
+                                )}
+                              >
+                                <span>{m.label}</span>
+                                <div className={cn(
+                                  "size-1 rounded-full",
+                                  config.animationMode === m.id ? "bg-black" : "bg-white/10 group-hover/anim:bg-white/40"
+                                )} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="h-[1px] bg-white/5" />
+
                         <div className="space-y-2">
                            <Slider label="Stretch" value={config.width} min={0.2} max={5} step={0.1} onChange={(v: number) => setConfig({ width: v })} />
                            <Slider label="Chaos" value={config.chaos} min={0} max={1} step={0.05} onChange={(v: number) => setConfig({ chaos: v })} />

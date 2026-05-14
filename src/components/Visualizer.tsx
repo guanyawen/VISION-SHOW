@@ -200,23 +200,124 @@ const VisualLine = ({
       </motion.div>
 
       {/* Top Layer: Sharp & Variable */}
-      <motion.div
-        className={cn(
-          "text-variable vj-stretch whitespace-nowrap font-sans font-black uppercase italic relative z-10",
+      {config.animationMode === 'wave' ? (
+        <div className={cn(
+          "text-variable vj-stretch font-sans font-black uppercase italic relative z-10 flex justify-center",
           config.mode === 'industrial' && "skew-x-[-15deg] tracking-tighter",
           config.mode === 'liquid' && "tracking-widest"
         )}
-        initial={{ opacity: 0, y: 20, scale: 0.8 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ delay: index * 0.1, type: 'spring' }}
         style={{
-          x: topX,
-          scaleY: config.mode === 'industrial' ? 1.2 : 0.95,
-          filter: config.mode === 'liquid' ? 'blur(0.8px)' : 'none'
-        }}
-      >
-        {line}
-      </motion.div>
+          fontSize: `${config.fontSize}vw`,
+          letterSpacing: `${config.spacing}em`,
+        }}>
+          {line.split('').map((char, ci) => (
+            <motion.span
+              key={ci}
+              initial={{ opacity: 0 }}
+              animate={{
+                y: [0, -20, 0],
+                opacity: 1
+              }}
+              transition={{
+                delay: index * 0.1 + ci * 0.08,
+                duration: 2 + config.speed,
+                repeat: Infinity,
+                ease: 'easeInOut'
+              }}
+              style={{
+                x: topX,
+              }}
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </motion.span>
+          ))}
+        </div>
+      ) : config.animationMode === 'spiral' ? (
+        <motion.div
+          className={cn(
+            "text-variable vj-stretch whitespace-nowrap font-sans font-black uppercase italic relative z-10",
+            config.mode === 'industrial' && "skew-x-[-15deg] tracking-tighter",
+            config.mode === 'liquid' && "tracking-widest"
+          )}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ 
+            opacity: 1, 
+            scale: 1,
+            rotate: [0, 360],
+          }}
+          transition={{ 
+            delay: index * 0.1,
+            rotate: {
+              duration: 4 / config.speed,
+              repeat: Infinity,
+              ease: 'linear'
+            },
+            scale: { delay: index * 0.1, type: 'spring' }
+          }}
+          style={{
+            x: topX,
+            scaleY: config.mode === 'industrial' ? 1.2 : 0.95,
+            filter: config.mode === 'liquid' ? 'blur(0.8px)' : 'none'
+          }}
+        >
+          {line}
+        </motion.div>
+      ) : config.animationMode === 'distort' ? (
+        <motion.div
+          className={cn(
+            "text-variable vj-stretch whitespace-nowrap font-sans font-black uppercase italic relative z-10",
+            config.mode === 'industrial' && "skew-x-[-15deg] tracking-tighter",
+            config.mode === 'liquid' && "tracking-widest"
+          )}
+          initial={{ opacity: 0, y: 20, scale: 0.8 }}
+          animate={{ 
+            opacity: 1, 
+            y: 0,
+            scale: 1,
+            skewX: [-5, 5, -5],
+            skewY: [-2, 2, -2]
+          }}
+          transition={{ 
+            delay: index * 0.1,
+            skewX: {
+              duration: 2 / config.speed,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            },
+            skewY: {
+              duration: 2.5 / config.speed,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            },
+            scale: { delay: index * 0.1, type: 'spring' }
+          }}
+          style={{
+            x: topX,
+            scaleY: config.mode === 'industrial' ? 1.2 : 0.95,
+            filter: config.mode === 'liquid' ? 'blur(0.8px)' : 'none'
+          }}
+        >
+          {line}
+        </motion.div>
+      ) : (
+        <motion.div
+          className={cn(
+            "text-variable vj-stretch whitespace-nowrap font-sans font-black uppercase italic relative z-10",
+            config.mode === 'industrial' && "skew-x-[-15deg] tracking-tighter",
+            config.mode === 'liquid' && "tracking-widest"
+          )}
+          initial={{ opacity: 0, y: 20, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: index * 0.1, type: 'spring' }}
+          style={{
+            x: topX,
+            scaleY: config.mode === 'industrial' ? 1.2 : 0.95,
+            filter: config.mode === 'liquid' ? 'blur(0.8px)' : 'none'
+          }}
+        >
+          {line}
+        </motion.div>
+      )}
     </div>
   );
 };
@@ -395,14 +496,14 @@ export const Visualizer: React.FC<VisualizerProps> = ({ audioStats }) => {
             ))}
             {/* Visual Underline Detail from theme */}
             <motion.div 
-              className="absolute -bottom-8 w-full h-1 bg-[#10b981] shadow-[0_0_20px_#10b981]"
+              className="absolute -bottom-8 w-full h-1 bg-[#10b981] shadow-[0_0_20px_#10b981] hidden"
               style={{ scaleX: underlineScale }}
             />
           </motion.div>
         </AnimatePresence>
 
         {/* Visualizer Floor - Responsive Frequency Bars */}
-        <div className="absolute bottom-12 w-full px-12 flex items-end justify-between gap-1 h-32 opacity-40">
+        <div className="absolute bottom-12 w-full px-12 flex items-end justify-between gap-1 h-32 opacity-40 hidden">
           {Array.from({ length: 32 }).map((_, i) => (
             <motion.div
               key={i}
